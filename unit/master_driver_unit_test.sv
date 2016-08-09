@@ -98,8 +98,8 @@ module master_driver_unit_test;
       })
 
       `FAIL_UNLESS_PROP(
-        intf.AWVALID === 0 [*3]
-          ##1 intf.AWVALID === 1)
+        !intf.AWVALID [*3]
+          ##1 intf.AWVALID)
     `SVTEST_END
 
 
@@ -117,9 +117,8 @@ module master_driver_unit_test;
       join_none
 
       `FAIL_UNLESS_PROP(
-        intf.AWVALID === 1 [*4]
-          ##1 intf.AWVALID === 1
-          ##1 intf.AWVALID === 0)
+        intf.AWVALID [*5]
+          ##1 !intf.AWVALID)
     `SVTEST_END
 
 
@@ -149,13 +148,14 @@ module master_driver_unit_test;
       wait_addr_phase_ended();
 
       `FAIL_UNLESS_PROP(
-        intf.WVALID === 0
-          ##1 intf.WVALID === 1
-          ##1 intf.WVALID === 0 [*3]
-          ##1 intf.WVALID === 1
-          ##1 intf.WVALID === 0 [*2]
-          ##1 intf.WVALID === 1
-          ##1 intf.WVALID === 1)
+        !intf.WVALID [*1]
+          ##1 intf.WVALID
+          ##1 !intf.WVALID [*3]
+          ##1 intf.WVALID
+          ##1 !intf.WVALID [*2]
+          ##1 intf.WVALID
+          ##1 !intf.WVALID [*0]
+          ##1 intf.WVALID)
     `SVTEST_END
 
 
