@@ -144,8 +144,7 @@ module master_driver_unit_test;
         transfers[3].delay == 0;
       })
 
-      // Skip over address phase
-      ##1;
+      wait_addr_phase_ended();
 
       ##1 `FAIL_UNLESS(intf.WVALID === 0)
       ##1 `FAIL_UNLESS(intf.WVALID === 1)
@@ -171,8 +170,7 @@ module master_driver_unit_test;
         transfers[3].data == 'h5555_5555;
       })
 
-      // Skip over address phase
-      ##1;
+      wait_addr_phase_ended();
 
       ##1 `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
       ##1 `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
@@ -190,8 +188,7 @@ module master_driver_unit_test;
         transfers[3].data == 'h5555_5555;
       })
 
-      // Skip over address phase
-      ##1;
+      wait_addr_phase_ended();
 
       intf.WREADY <= 0;
       repeat (3)
@@ -223,8 +220,7 @@ module master_driver_unit_test;
         length == LENGTH_8;
       })
 
-      // Skip over address phase
-      ##1;
+      wait_addr_phase_ended();
 
       // Test bug:
       // Even when not using the '==' uperator, the macros convert expression
@@ -254,6 +250,11 @@ module master_driver_unit_test;
     intf.BRESP = 0;
     intf.BVALID = 0;
     intf.BREADY = 'x;
+  endtask
+
+
+  task wait_addr_phase_ended();
+    @(posedge clk iff intf.AWVALID && intf.AWREADY);
   endtask
 
 
