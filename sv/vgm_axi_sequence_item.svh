@@ -13,10 +13,70 @@
 // limitations under the License.
 
 
+typedef enum bit [3:0] { LENGTH_[1:16] } length_e;
+typedef class transfer;
+
+
+
 class sequence_item extends uvm_sequence_item;
+  rand bit [3:0] id;
+  rand bit [31:0] address;
+  rand length_e length;
+  rand transfer transfers[];
+
+  rand int unsigned delay;
+
+
+  constraint num_of_transfers {
+    transfers.size() == length + 1;
+  }
+
+  constraint default_delay {
+    delay inside { [0:10] };
+  }
+
+
+  function void pre_randomize();
+    transfers = new[16] (transfers);
+    foreach (transfers[i])
+      if (transfers[i] == null)
+        transfers[i] = transfer::type_id::create($sformatf("transfers[%0d]", i),
+          null, get_full_name());
+  endfunction
+
+
   function new(string name = get_type_name());
     super.new(name);
   endfunction
 
-  `uvm_object_utils(vgm_axi::sequence_item)
+  `uvm_object_utils_begin(vgm_axi::sequence_item)
+    `uvm_field_int(id, UVM_ALL_ON)
+    `uvm_field_int(address, UVM_ALL_ON)
+    `uvm_field_enum(vgm_axi::length_e, length, UVM_ALL_ON)
+    `uvm_field_array_object(transfers, UVM_ALL_ON)
+    `uvm_field_int(delay, UVM_ALL_ON | UVM_DEC)
+  `uvm_object_utils_end
+endclass
+
+
+
+class transfer extends uvm_sequence_item;
+  rand bit[31:0] data;
+
+  rand int unsigned delay;
+
+
+  constraint default_delay {
+    delay inside { [0:10] };
+  }
+
+
+  function new(string name = get_type_name());
+    super.new(name);
+  endfunction
+
+  `uvm_object_utils_begin(vgm_axi::transfer)
+    `uvm_field_int(data, UVM_ALL_ON)
+    `uvm_field_int(delay, UVM_ALL_ON | UVM_DEC)
+  `uvm_object_utils_end
 endclass

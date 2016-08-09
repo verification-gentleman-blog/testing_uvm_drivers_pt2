@@ -1,0 +1,83 @@
+
+#
+# Mnemonic Maps
+#
+mmap new -reuse -name {Boolean as Logic} -radix %b -contents {{%c=FALSE -edgepriority 1 -shape low}
+{%c=TRUE -edgepriority 1 -shape high}}
+mmap new -reuse -name {Example Map} -radix %x -contents {{%b=11???? -bgcolor orange -label REG:%x -linecolor yellow -shape bus}
+{%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=* -label %x -linecolor gray -shape bus}}
+
+array unset createdGroup
+array set createdGroup {}
+#
+# Groups
+#
+if {[catch {group get -using [list Write address]}]} {
+set createdGroup([list Write address]) 1
+catch {group new -name {Write address} -overlay 0}
+}
+if {[catch {group get -using [list Write response]}]} {
+set createdGroup([list Write response]) 1
+catch {group new -name {Write response} -overlay 0}
+}
+if {[catch {group get -using [list Write data]}]} {
+set createdGroup([list Write data]) 1
+catch {group new -name {Write data} -overlay 0}
+}
+if {[info exists createdGroup([list Write address])]} {
+group using {Write address}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+group insert \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.AWID[3:0]}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.AWADDR[31:0]}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.AWLEN[3:0]}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.AWVALID}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.AWREADY}]} ]
+}
+
+if {[info exists createdGroup([list Write response])]} {
+group using {Write response}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+group insert \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.BID[3:0]}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.BRESP[1:0]}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.BVALID}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.BREADY}]} ]
+}
+
+if {[info exists createdGroup([list Write data])]} {
+group using {Write data}
+group set -overlay 0
+group set -comment {}
+group clear 0 end
+group insert \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.WID[3:0]}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.WDATA[31:0]}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.WLAST}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.WVALID}]} ] \
+    [subst  {[format {testrunner.__ts.master_driver_ut.intf.WREADY}]} ]
+}
+
+set id [waveform add -signals [subst  {
+	{[format {testrunner.__ts.master_driver_ut.intf.ACLK}]}
+	} ]]
+set id [waveform add -signals [subst  {
+	{[format {testrunner.__ts.master_driver_ut.intf.ARESETn}]}
+	} ]]
+
+set groupId0 [waveform add -groups {{Write address}}]
+
+
+set groupId0 [waveform add -groups {{Write data}}]
+
+
+set groupId0 [waveform add -groups {{Write response}}]
+
+
+waveform xview limits 0 23ns
