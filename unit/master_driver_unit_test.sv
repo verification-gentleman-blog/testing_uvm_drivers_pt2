@@ -71,15 +71,27 @@ module master_driver_unit_test;
   endtask
 
 
+  `define add_item_with(CONSTRAINTS) \
+    sequence_item item = new("item"); \
+    `FAIL_UNLESS(item.randomize() with { \
+      soft delay == 0; \
+      foreach (transfers[i]) \
+        soft transfers[i].delay == 0; \
+      \
+      if (1) \
+        CONSTRAINTS \
+      \
+    }) \
+    sequencer.add_item(item); \
+
+
 
   `SVUNIT_TESTS_BEGIN
 
     `SVTEST(drive_awvalid__with_delay)
-      sequence_item item = new("item");
-      `FAIL_UNLESS(item.randomize() with {
+      `add_item_with({
         delay == 3;
       })
-      sequencer.add_item(item);
 
       repeat (3)
         @(posedge clk) `FAIL_UNLESS(intf.AWVALID === 0)
@@ -88,11 +100,9 @@ module master_driver_unit_test;
 
 
     `SVTEST(drive_awvalid__held_until_hready)
-      sequence_item item = new("item");
-      `FAIL_UNLESS(item.randomize() with {
+      `add_item_with({
         delay == 0;
       })
-      sequencer.add_item(item);
       intf.AWREADY <= 0;
 
       repeat (4)
@@ -105,14 +115,11 @@ module master_driver_unit_test;
 
 
     `SVTEST(drive_write_addr_channel)
-      sequence_item item = new("item");
-      `FAIL_UNLESS(item.randomize() with {
+      `add_item_with({
         id == 5;
         address == 'h1122_3344;
         length == LENGTH_14;
-        delay == 0;
       })
-      sequencer.add_item(item);
 
       // Test bug:
       // Wrong usage of '==' instead of '===' causes the test to always pass.
@@ -126,16 +133,13 @@ module master_driver_unit_test;
 
 
     `SVTEST(drive_wvalid__with_delay)
-      sequence_item item = new("item");
-      `FAIL_UNLESS(item.randomize() with {
-        delay == 0;
+      `add_item_with({
         length == LENGTH_4;
         transfers[0].delay == 1;
         transfers[1].delay == 3;
         transfers[2].delay == 2;
         transfers[3].delay == 0;
       })
-      sequencer.add_item(item);
 
       // Skip over address phase
       @(posedge clk);
@@ -156,20 +160,13 @@ module master_driver_unit_test;
 
 
     `SVTEST(drive_write_data_channel)
-      sequence_item item = new("item");
-      `FAIL_UNLESS(item.randomize() with {
-        delay == 0;
+      `add_item_with({
         length == LENGTH_4;
         transfers[0].data == 'hffff_ffff;
         transfers[1].data == 'h0000_0000;
         transfers[2].data == 'haaaa_aaaa;
         transfers[3].data == 'h5555_5555;
-        transfers[0].delay == 0;
-        transfers[1].delay == 0;
-        transfers[2].delay == 0;
-        transfers[3].delay == 0;
       })
-      sequencer.add_item(item);
 
       // Skip over address phase
       @(posedge clk);
@@ -182,20 +179,13 @@ module master_driver_unit_test;
 
 
     `SVTEST(drive_write_data_channel__data_held_until_wready)
-      sequence_item item = new("item");
-      `FAIL_UNLESS(item.randomize() with {
-        delay == 0;
+      `add_item_with({
         length == LENGTH_4;
         transfers[0].data == 'hffff_ffff;
         transfers[1].data == 'h0000_0000;
         transfers[2].data == 'haaaa_aaaa;
         transfers[3].data == 'h5555_5555;
-        transfers[0].delay == 0;
-        transfers[1].delay == 0;
-        transfers[2].delay == 0;
-        transfers[3].delay == 0;
       })
-      sequencer.add_item(item);
 
       // Skip over address phase
       @(posedge clk);
@@ -226,14 +216,9 @@ module master_driver_unit_test;
 
 
     `SVTEST(drive_write_data_channel__wlast_driven_for_last_transfer)
-      sequence_item item = new("item");
-      `FAIL_UNLESS(item.randomize() with {
-        delay == 0;
+      `add_item_with({
         length == LENGTH_8;
-        foreach (transfers[i])
-          transfers[i].delay == 0;
       })
-      sequencer.add_item(item);
 
       // Skip over address phase
       @(posedge clk);
@@ -268,4 +253,6 @@ module master_driver_unit_test;
     intf.BREADY = 'x;
   endtask
 
+
+  `undef add_item_with
 endmodule
