@@ -41,6 +41,9 @@ module master_driver_unit_test;
 
   vgm_axi_interface intf(clk, rst);
 
+  default clocking @(posedge clk);
+  endclocking
+
 
   function void build();
     svunit_ut = new(name);
@@ -94,8 +97,8 @@ module master_driver_unit_test;
       })
 
       repeat (3)
-        @(posedge clk) `FAIL_UNLESS(intf.AWVALID === 0)
-      @(posedge clk) `FAIL_UNLESS(intf.AWVALID === 1)
+        ##1 `FAIL_UNLESS(intf.AWVALID === 0)
+      ##1 `FAIL_UNLESS(intf.AWVALID === 1)
     `SVTEST_END
 
 
@@ -106,11 +109,11 @@ module master_driver_unit_test;
       intf.AWREADY <= 0;
 
       repeat (4)
-        @(posedge clk) `FAIL_UNLESS(intf.AWVALID === 1)
+        ##1 `FAIL_UNLESS(intf.AWVALID === 1)
 
       intf.AWREADY <= 1;
-      @(posedge clk) `FAIL_UNLESS(intf.AWVALID === 1)
-      @(posedge clk) `FAIL_UNLESS(intf.AWVALID === 0)
+      ##1 `FAIL_UNLESS(intf.AWVALID === 1)
+      ##1 `FAIL_UNLESS(intf.AWVALID === 0)
     `SVTEST_END
 
 
@@ -125,7 +128,7 @@ module master_driver_unit_test;
       // Wrong usage of '==' instead of '===' causes the test to always pass.
       // If you're doing TDD you should notice this, but not if you're unit
       // testing after the fact.
-      @(posedge clk);
+      ##1;
       `FAIL_UNLESS(intf.AWID == 5)
       `FAIL_UNLESS(intf.AWADDR == 'h1122_3344)
       `FAIL_UNLESS(intf.AWLEN == 'b1101)
@@ -142,20 +145,20 @@ module master_driver_unit_test;
       })
 
       // Skip over address phase
-      @(posedge clk);
+      ##1;
 
-      @(posedge clk) `FAIL_UNLESS(intf.WVALID === 0)
-      @(posedge clk) `FAIL_UNLESS(intf.WVALID === 1)
+      ##1 `FAIL_UNLESS(intf.WVALID === 0)
+      ##1 `FAIL_UNLESS(intf.WVALID === 1)
 
       repeat (3)
-        @(posedge clk) `FAIL_UNLESS(intf.WVALID === 0)
-      @(posedge clk) `FAIL_UNLESS(intf.WVALID === 1)
+        ##1 `FAIL_UNLESS(intf.WVALID === 0)
+      ##1 `FAIL_UNLESS(intf.WVALID === 1)
 
       repeat (2)
-        @(posedge clk) `FAIL_UNLESS(intf.WVALID === 0)
-      @(posedge clk) `FAIL_UNLESS(intf.WVALID === 1)
+        ##1 `FAIL_UNLESS(intf.WVALID === 0)
+      ##1 `FAIL_UNLESS(intf.WVALID === 1)
 
-      @(posedge clk) `FAIL_UNLESS(intf.WVALID === 1)
+      ##1 `FAIL_UNLESS(intf.WVALID === 1)
     `SVTEST_END
 
 
@@ -169,12 +172,12 @@ module master_driver_unit_test;
       })
 
       // Skip over address phase
-      @(posedge clk);
+      ##1;
 
-      @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
-      @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
-      @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'haaaa_aaaa)
-      @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'h5555_5555)
+      ##1 `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
+      ##1 `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
+      ##1 `FAIL_UNLESS(intf.WDATA === 'haaaa_aaaa)
+      ##1 `FAIL_UNLESS(intf.WDATA === 'h5555_5555)
     `SVTEST_END
 
 
@@ -188,30 +191,30 @@ module master_driver_unit_test;
       })
 
       // Skip over address phase
-      @(posedge clk);
+      ##1;
 
       intf.WREADY <= 0;
       repeat (3)
-        @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
+        ##1 `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
       intf.WREADY <= 1;
-      @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
+      ##1 `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
 
       intf.WREADY <= 0;
-      @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
+      ##1 `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
       intf.WREADY <= 1;
-      @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
+      ##1 `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
 
       intf.WREADY <= 0;
       repeat (2)
-        @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'haaaa_aaaa)
+        ##1 `FAIL_UNLESS(intf.WDATA === 'haaaa_aaaa)
       intf.WREADY <= 1;
-      @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'haaaa_aaaa)
+      ##1 `FAIL_UNLESS(intf.WDATA === 'haaaa_aaaa)
 
       intf.WREADY <= 0;
       repeat (4)
-        @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'h5555_5555)
+        ##1 `FAIL_UNLESS(intf.WDATA === 'h5555_5555)
       intf.WREADY <= 1;
-      @(posedge clk) `FAIL_UNLESS(intf.WDATA === 'h5555_5555)
+      ##1 `FAIL_UNLESS(intf.WDATA === 'h5555_5555)
     `SVTEST_END
 
 
@@ -221,14 +224,14 @@ module master_driver_unit_test;
       })
 
       // Skip over address phase
-      @(posedge clk);
+      ##1;
 
       // Test bug:
       // Even when not using the '==' uperator, the macros convert expression
       // to 'bit'.
       repeat (7)
-        @(posedge clk) `FAIL_IF(intf.WLAST)
-      @(posedge clk) `FAIL_UNLESS(intf.WLAST)
+        ##1 `FAIL_IF(intf.WLAST)
+      ##1 `FAIL_UNLESS(intf.WLAST)
     `SVTEST_END
 
   `SVUNIT_TESTS_END
