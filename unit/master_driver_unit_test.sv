@@ -181,10 +181,6 @@ module master_driver_unit_test;
     `SVTEST(drive_write_data_channel__data_held_until_wready)
       `add_item_with({
         length == LENGTH_4;
-        transfers[0].data == 'hffff_ffff;
-        transfers[1].data == 'h0000_0000;
-        transfers[2].data == 'haaaa_aaaa;
-        transfers[3].data == 'h5555_5555;
       })
 
       wait_addr_phase_ended();
@@ -213,10 +209,10 @@ module master_driver_unit_test;
       join_none
 
       `FAIL_UNLESS_PROP(
-        intf.WDATA === 'hffff_ffff [*4]
-          ##1 intf.WDATA === 'h0000_0000 [*2]
-          ##1 intf.WDATA === 'haaaa_aaaa [*3]
-          ##1 intf.WDATA === 'h5555_5555 [*5])
+        stable_for(intf.WDATA, 3)
+          ##1 stable_for(intf.WDATA, 1)
+          ##1 stable_for(intf.WDATA, 2)
+          ##1 stable_for(intf.WDATA, 4))
     `SVTEST_END
 
 
@@ -258,6 +254,11 @@ module master_driver_unit_test;
   task wait_addr_phase_ended();
     @(posedge clk iff intf.AWVALID && intf.AWREADY);
   endtask
+
+
+  sequence stable_for(signal, int unsigned num_cycles);
+    ##1 ($stable(signal) [*num_cycles]);
+  endsequence
 
 
   `undef add_item_with
