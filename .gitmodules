@@ -1,0 +1,6 @@
+[submodule "dependencies/svunit"]
+	path = dependencies/svunit
+	url = https://github.com/nosnhojn/svunit-code
+[submodule "dependencies/vgm_svunit_utils"]
+	path = dependencies/vgm_svunit_utils
+	url = https://github.com/tudortimi/vgm_svunit_utils.git
