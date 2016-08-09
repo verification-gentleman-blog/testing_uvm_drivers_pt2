@@ -23,6 +23,7 @@ module master_driver_unit_test;
   `include "svunit_defines.svh"
 
   import vgm_svunit_utils::*;
+  `include "vgm_svunit_utils_macros.svh"
 
   string name = "master_driver_ut";
   svunit_testcase svunit_ut;
@@ -96,9 +97,9 @@ module master_driver_unit_test;
         delay == 3;
       })
 
-      repeat (3)
-        ##1 `FAIL_UNLESS(intf.AWVALID === 0)
-      ##1 `FAIL_UNLESS(intf.AWVALID === 1)
+      `FAIL_UNLESS_PROP(
+        intf.AWVALID === 0 [*3]
+          ##1 intf.AWVALID === 1)
     `SVTEST_END
 
 
@@ -108,12 +109,17 @@ module master_driver_unit_test;
       })
       intf.AWREADY <= 0;
 
-      repeat (4)
-        ##1 `FAIL_UNLESS(intf.AWVALID === 1)
+      fork
+        begin
+          ##4;
+          intf.AWREADY <= 1;
+        end
+      join_none
 
-      intf.AWREADY <= 1;
-      ##1 `FAIL_UNLESS(intf.AWVALID === 1)
-      ##1 `FAIL_UNLESS(intf.AWVALID === 0)
+      `FAIL_UNLESS_PROP(
+        intf.AWVALID === 1 [*4]
+          ##1 intf.AWVALID === 1
+          ##1 intf.AWVALID === 0)
     `SVTEST_END
 
 
@@ -124,14 +130,10 @@ module master_driver_unit_test;
         length == LENGTH_14;
       })
 
-      // Test bug:
-      // Wrong usage of '==' instead of '===' causes the test to always pass.
-      // If you're doing TDD you should notice this, but not if you're unit
-      // testing after the fact.
-      ##1;
-      `FAIL_UNLESS(intf.AWID == 5)
-      `FAIL_UNLESS(intf.AWADDR == 'h1122_3344)
-      `FAIL_UNLESS(intf.AWLEN == 'b1101)
+      `FAIL_UNLESS_PROP(
+        intf.AWID === 5 &&
+          intf.AWADDR === 'h1122_3344 &&
+          intf.AWLEN === 'b1101)
     `SVTEST_END
 
 
@@ -146,18 +148,14 @@ module master_driver_unit_test;
 
       wait_addr_phase_ended();
 
-      ##1 `FAIL_UNLESS(intf.WVALID === 0)
-      ##1 `FAIL_UNLESS(intf.WVALID === 1)
-
-      repeat (3)
-        ##1 `FAIL_UNLESS(intf.WVALID === 0)
-      ##1 `FAIL_UNLESS(intf.WVALID === 1)
-
-      repeat (2)
-        ##1 `FAIL_UNLESS(intf.WVALID === 0)
-      ##1 `FAIL_UNLESS(intf.WVALID === 1)
-
-      ##1 `FAIL_UNLESS(intf.WVALID === 1)
+      `FAIL_UNLESS_PROP(
+        intf.WVALID === 0
+          ##1 intf.WVALID === 1
+          ##1 intf.WVALID === 0 [*3]
+          ##1 intf.WVALID === 1
+          ##1 intf.WVALID === 0 [*2]
+          ##1 intf.WVALID === 1
+          ##1 intf.WVALID === 1)
     `SVTEST_END
 
 
@@ -172,10 +170,11 @@ module master_driver_unit_test;
 
       wait_addr_phase_ended();
 
-      ##1 `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
-      ##1 `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
-      ##1 `FAIL_UNLESS(intf.WDATA === 'haaaa_aaaa)
-      ##1 `FAIL_UNLESS(intf.WDATA === 'h5555_5555)
+      `FAIL_UNLESS_PROP(
+        intf.WDATA === 'hffff_ffff
+          ##1 intf.WDATA === 'h0000_0000
+          ##1 intf.WDATA === 'haaaa_aaaa
+          ##1 intf.WDATA === 'h5555_5555)
     `SVTEST_END
 
 
@@ -190,28 +189,34 @@ module master_driver_unit_test;
 
       wait_addr_phase_ended();
 
-      intf.WREADY <= 0;
-      repeat (3)
-        ##1 `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
-      intf.WREADY <= 1;
-      ##1 `FAIL_UNLESS(intf.WDATA === 'hffff_ffff)
+      fork
+        begin
+          intf.WREADY <= 0;
+          ##3;
+          intf.WREADY <= 1;
+          ##1;
 
-      intf.WREADY <= 0;
-      ##1 `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
-      intf.WREADY <= 1;
-      ##1 `FAIL_UNLESS(intf.WDATA === 'h0000_0000)
+          intf.WREADY <= 0;
+          ##1;
+          intf.WREADY <= 1;
+          ##1;
 
-      intf.WREADY <= 0;
-      repeat (2)
-        ##1 `FAIL_UNLESS(intf.WDATA === 'haaaa_aaaa)
-      intf.WREADY <= 1;
-      ##1 `FAIL_UNLESS(intf.WDATA === 'haaaa_aaaa)
+          intf.WREADY <= 0;
+          ##2;
+          intf.WREADY <= 1;
+          ##1;
 
-      intf.WREADY <= 0;
-      repeat (4)
-        ##1 `FAIL_UNLESS(intf.WDATA === 'h5555_5555)
-      intf.WREADY <= 1;
-      ##1 `FAIL_UNLESS(intf.WDATA === 'h5555_5555)
+          intf.WREADY <= 0;
+          ##4;
+          intf.WREADY <= 1;
+        end
+      join_none
+
+      `FAIL_UNLESS_PROP(
+        intf.WDATA === 'hffff_ffff [*4]
+          ##1 intf.WDATA === 'h0000_0000 [*2]
+          ##1 intf.WDATA === 'haaaa_aaaa [*3]
+          ##1 intf.WDATA === 'h5555_5555 [*5])
     `SVTEST_END
 
 
@@ -222,12 +227,9 @@ module master_driver_unit_test;
 
       wait_addr_phase_ended();
 
-      // Test bug:
-      // Even when not using the '==' uperator, the macros convert expression
-      // to 'bit'.
-      repeat (7)
-        ##1 `FAIL_IF(intf.WLAST)
-      ##1 `FAIL_UNLESS(intf.WLAST)
+      `FAIL_UNLESS_PROP(
+        !intf.WLAST [*7]
+          ##1 intf.WLAST)
     `SVTEST_END
 
   `SVUNIT_TESTS_END
