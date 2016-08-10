@@ -239,7 +239,9 @@ module master_driver_unit_test;
       intf.BREADY <= 1;
       ##1;
 
-      uvm_wait_for_nba_region();
+      `FAIL_UNLESS_TRIGGERED(sequencer.put_response_called)
+      `FAIL_UNLESS(sequencer.num_put_response_calls == 1)
+
       `FAIL_UNLESS(sequencer.try_get_rsp(rsp))
       `FAIL_UNLESS(rsp.id == 5)
     `SVTEST_END
@@ -260,10 +262,10 @@ module master_driver_unit_test;
     intf.WVALID = 'x;
     intf.WREADY = 1;
 
-    intf.BID = 0;;
+    intf.BID = 0;
     intf.BRESP = 0;
     intf.BVALID = 0;
-    intf.BREADY = 'x;
+    intf.BREADY = 0;
   endtask
 
 

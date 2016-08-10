@@ -92,9 +92,7 @@ class master_driver extends uvm_driver #(sequence_item, response);
 
 
   virtual protected task collect();
-    // Bug:
-    // Should wait for BVALID and BREADY
-    @(intf.ACLK iff intf.BVALID);
+    @(posedge intf.ACLK iff intf.BVALID && intf.BREADY);
     rsp = response::type_id::create("rsp");
     rsp.id = intf.BID;
   endtask
