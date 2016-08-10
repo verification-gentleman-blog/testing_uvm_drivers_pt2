@@ -13,7 +13,7 @@
 // limitations under the License.
 
 
-class master_driver extends uvm_driver #(sequence_item);
+class master_driver extends uvm_driver #(sequence_item, response);
   virtual vgm_axi_interface intf;
   event reset;
 
@@ -22,6 +22,7 @@ class master_driver extends uvm_driver #(sequence_item);
     forever begin
       fork
         get_and_drive();
+        collect_and_put();
         @(reset);
       join_any
       disable fork;
@@ -79,6 +80,23 @@ class master_driver extends uvm_driver #(sequence_item);
 
     @(posedge intf.ACLK iff intf.WREADY);
     intf.WVALID <= 0;
+  endtask
+
+
+  virtual protected task collect_and_put();
+    forever begin
+      collect();
+      seq_item_port.put_response(rsp);
+    end
+  endtask
+
+
+  virtual protected task collect();
+    // Bug:
+    // Should wait for BVALID and BREADY
+    @(intf.ACLK iff intf.BVALID);
+    rsp = response::type_id::create("rsp");
+    rsp.id = intf.BID;
   endtask
 
 

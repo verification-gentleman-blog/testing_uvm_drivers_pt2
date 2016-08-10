@@ -34,7 +34,7 @@ module master_driver_unit_test;
   master_driver driver;
 
 
-  sequencer_stub #(sequence_item) sequencer;
+  sequencer_stub #(sequence_item, response) sequencer;
 
   bit rst = 1;
   bit clk;
@@ -226,6 +226,22 @@ module master_driver_unit_test;
       `FAIL_UNLESS_PROP(
         !intf.WLAST [*7]
           ##1 intf.WLAST)
+    `SVTEST_END
+
+
+    `SVTEST(put_response_when_ready)
+      response rsp;
+
+      intf.BID <= 5;
+      intf.BVALID <= 1;
+      ##1;
+
+      intf.BREADY <= 1;
+      ##1;
+
+      uvm_wait_for_nba_region();
+      `FAIL_UNLESS(sequencer.try_get_rsp(rsp))
+      `FAIL_UNLESS(rsp.id == 5)
     `SVTEST_END
 
   `SVUNIT_TESTS_END

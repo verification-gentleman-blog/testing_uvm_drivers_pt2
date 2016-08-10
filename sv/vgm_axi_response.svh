@@ -13,11 +13,17 @@
 // limitations under the License.
 
 
-package vgm_axi;
-  import uvm_pkg::*;
-  `include "uvm_macros.svh"
+typedef enum { OKAY, EXOKAY, SLVERR, DECERR } response_kind_e;
 
-  `include "vgm_axi_sequence_item.svh"
-  `include "vgm_axi_response.svh"
-  `include "vgm_axi_master_driver.svh"
-endpackage
+
+
+class response extends uvm_sequence_item;
+  bit [3:0] id;
+  response_kind_e kind;
+
+  function new(string name = get_type_name());
+    super.new(name);
+  endfunction
+
+  `uvm_object_utils(vgm_axi::response)
+endclass
